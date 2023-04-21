@@ -1,70 +1,50 @@
-from multidict import MultiDict
-from pyobigram.client import ObigramClient
-from pyobigram.inline import inlineKeyboardMarkup,inlineKeyboardButton
-from aiohttp import web
-import threading
-import asyncio
+from pyrogram import Client, filters
+import requests
+from bs4 import BeautifulSoup
 
-BOT_TOKEN = '6140209276:AAFO_epd5fCkqAVC9TJCprpFNeCEVABrouk'
-API_ID = '9548711'
-API_HASH = '4225fbfa50c5ac44194081a0f114bdd1'
-HOST_ = 'http://filetolinksx-production.up.railway.app/'
+api_id = 9548711 # Reemplaza con tu api_id
+api_hash = "4225fbfa50c5ac44194081a0f114bdd1" # Reemplaza con tu api_hash
+bot_token = "5635481710:AAFCFnhjfDFW6G5sm9E5o48-9Bm1MBuXB8w" # Reemplaza con tu token de bot
 
+app = Client("my_bot", api_id, api_hash, bot_token=bot_token)
 
-bot:ObigramClient = None
+# Define el comando "/tabla" para obtener la tabla de posiciones
+@app.on_message(filters.command("tabla"))
+def tabla_command(client, message):
+    # Realiza una solicitud GET a la página web de la Serie Nacional de Béisbol de Cuba
+    response = requests.get("http://www.beisbolencuba.com/series-nacionales/")
 
-routes = web.RouteTableDef()
-@routes.get('/{chatid}/{msgid}')
-async def get_file(request):
-    global bot
-    chatid = request.match_info['chatid']
-    msgid = request.match_info['msgid']
-    if bot:
-        msg = bot.mtp_gen_message(int(chatid),int(msgid))
-        stream = await bot.async_get_info_stream(msg)
-        headers = MultiDict({'Content-Disposition':'attachment; filename="'+stream['fname']+'"','Content-Length':str(stream['fsize'])})
-        return web.Response(body=stream['body'],headers=headers)
-    return web.Response(text='404 NOT FOUND')
+    # Analiza el contenido HTML de la página web utilizando BeautifulSoup
+    soup = BeautifulSoup(response.content, "html.parser")
 
-def onmessage(update,bot:ObigramClient):
-    message = update.message
-    if bot.contain_file(message):
-        filename = message.file.file_id
-        try:
-            filename += message.file.mime_type.split('/')[-1]
-        except:pass
-        try:
-            filename = message.file.file_name
-        except:pass
-        msg = bot.send_message(message.chat.id,'?Generando Enlace?',reply_to_message_id=message.message_id)
-        url = f'{HOST_}{message.chat.id}/{message.message_id}'
-        reply_markup = inlineKeyboardMarkup(r1=[
-            inlineKeyboardButton('Enlace del archivo', url=url)
-        ])
-		
-        resp_text = f'{filename} ✅'
-        bot.edit_message(msg,resp_text,reply_markup=reply_markup)
-    elif '/start' in message.text:
-        reply_markup = inlineKeyboardMarkup(r1=[
-            inlineKeyboardButton('Canal del Bot',url='https://t.me/ProjectsZBot_b')
-        ])
-        bot.send_message(message.chat.id,'Hola @{} Bienvenido a File to Link, Unete al Canal del bpt para estar informado de nuevos proyectos'.format(message.chat.username),reply_markup=reply_markup,reply_to_message_id=message.message_id)
-    pass
+    # Encuentra la tabla de posiciones en la página web
+    tabla = soup.find("table", {"class": "tabla"})
 
-if __name__ =='__main__':
-    def run_web():
-        global bot
-        while not bot:pass
-        while not bot.loop:pass
-        app = web.Application()
-        app.add_routes(routes)
-        runner = web.AppRunner(app)
-        bot.loop.run_until_complete(runner.setup())
-        site = web.TCPSite(runner,host='0.0.0.0',port=80)
-        bot.loop.run_until_complete(site.start())
-        bot.loop.run_forever()
-    threading.Thread(target=run_web).start()
-    bot = ObigramClient(BOT_TOKEN,API_ID,API_HASH)
-    bot.onMessage(onmessage)
-    print('bot started!')
-    bot.run()
+    # Crea una respuesta de mensaje con la tabla de posiciones
+    response_message = f"<b>Tabla de posiciones:</b>n{tabla}"
+
+    # Envía la respuesta de mensaje al chat
+    client.send_message(message.chat.id, response_message, parse_mode="html")
+
+# Define el comando "/resultados" para obtener los resultados de los juegos
+@app.on_message(filters.command("resultados"))
+def resultados_command(client, message):
+    # Realiza una solicitud GET a la página web de la Serie Nacional de Béisbol de Cuba
+    response = requests.get("http://www.beisbolencuba.com/series-nacionales/")
+
+    # Analiza el contenido HTML de la página web utilizando BeautifulSoup
+    soup = BeautifulSoup(response.content, "html.parser")
+
+    # Encuentra la tabla de resultados en la página web
+    tabla = soup.find("table", {"class": "tabla"})
+
+    # Crea una respuesta de mensaje con la tabla de resultados
+    response_message = f"<b>Resultados:</b>n{tabla}"
+
+    # Envía la respuesta de mensaje al chat
+    client.send_message(message.chat.id, response_message, parse_mode="html")
+
+# Inicia el cliente de Pyrogram
+print("Iniciando bot")
+app.run()
+print("Bot iniciado")
