@@ -45,6 +45,5 @@ def resultados_command(client, message):
     client.send_message(message.chat.id, response_message, parse_mode="html")
 
 # Inicia el cliente de Pyrogram
-print("Iniciando bot")
 app.run()
 print("Bot iniciado")
