@@ -26,10 +26,8 @@ def process_message(client, message):
         tabla = soup.find("table", {"class": "tabla"})
 
         # Crea una respuesta de mensaje con la tabla de posiciones
-        response_message = f"<b>Tabla de posiciones:</b>n{tabla}"
-
-        # Envía la respuesta de mensaje al chat
-        client.send_message(message.chat.id, response_message, parse_mode="html")
+       response_message = "Here's the table of positions:n" + table
+       client.send_message(message.chat.id, response_message, parse_mode="markdown")
 
     # Verificar si el mensaje comienza con el prefijo del comando "/resultados"
     elif text.startswith("/resultados"):
