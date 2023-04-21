@@ -8,7 +8,7 @@ import asyncio
 BOT_TOKEN = '6140209276:AAFO_epd5fCkqAVC9TJCprpFNeCEVABrouk'
 API_ID = '9548711'
 API_HASH = '4225fbfa50c5ac44194081a0f114bdd1'
-HOST_ = 'http://0.0.0.0/'
+HOST_ = 'http://filetolinksx-production.up.railway.app/'
 
 
 bot:ObigramClient = None
