@@ -8,42 +8,45 @@ bot_token = "5635481710:AAFCFnhjfDFW6G5sm9E5o48-9Bm1MBuXB8w" # Reemplaza con tu 
 
 app = Client("my_bot", api_id, api_hash, bot_token=bot_token)
 
-# Define el comando "/tabla" para obtener la tabla de posiciones
-@app.on_message(filters.command("tabla"))
-def tabla_command(client, message):
-    # Realiza una solicitud GET a la página web de la Serie Nacional de Béisbol de Cuba
-    response = requests.get("http://www.beisbolencuba.com/series-nacionales/")
+# Define la función para procesar los mensajes
+@app.on_message(filters.private)
+def process_message(client, message):
+    # Obtener el texto del mensaje
+    text = message.text.lower()
 
-    # Analiza el contenido HTML de la página web utilizando BeautifulSoup
-    soup = BeautifulSoup(response.content, "html.parser")
+    # Verificar si el mensaje comienza con el prefijo del comando "/tabla"
+    if text.startswith("/tabla"):
+        # Realiza una solicitud GET a la página web de la Serie Nacional de Béisbol de Cuba
+        response = requests.get("http://www.beisbolencuba.com/series-nacionales/")
 
-    # Encuentra la tabla de posiciones en la página web
-    tabla = soup.find("table", {"class": "tabla"})
+        # Analiza el contenido HTML de la página web utilizando BeautifulSoup
+        soup = BeautifulSoup(response.content, "html.parser")
 
-    # Crea una respuesta de mensaje con la tabla de posiciones
-    response_message = f"<b>Tabla de posiciones:</b>n{tabla}"
+        # Encuentra la tabla de posiciones en la página web
+        tabla = soup.find("table", {"class": "tabla"})
 
-    # Envía la respuesta de mensaje al chat
-    client.send_message(message.chat.id, response_message, parse_mode="html")
+        # Crea una respuesta de mensaje con la tabla de posiciones
+        response_message = f"<b>Tabla de posiciones:</b>n{tabla}"
 
-# Define el comando "/resultados" para obtener los resultados de los juegos
-@app.on_message(filters.command("resultados"))
-def resultados_command(client, message):
-    # Realiza una solicitud GET a la página web de la Serie Nacional de Béisbol de Cuba
-    response = requests.get("http://www.beisbolencuba.com/series-nacionales/")
+        # Envía la respuesta de mensaje al chat
+        client.send_message(message.chat.id, response_message, parse_mode="html")
 
-    # Analiza el contenido HTML de la página web utilizando BeautifulSoup
-    soup = BeautifulSoup(response.content, "html.parser")
+    # Verificar si el mensaje comienza con el prefijo del comando "/resultados"
+    elif text.startswith("/resultados"):
+        # Realiza una solicitud GET a la página web de la Serie Nacional de Béisbol de Cuba
+        response = requests.get("http://www.beisbolencuba.com/series-nacionales/")
 
-    # Encuentra la tabla de resultados en la página web
-    tabla = soup.find("table", {"class": "tabla"})
+        # Analiza el contenido HTML de la página web utilizando BeautifulSoup
+        soup = BeautifulSoup(response.content, "html.parser")
 
-    # Crea una respuesta de mensaje con la tabla de resultados
-    response_message = f"<b>Resultados:</b>n{tabla}"
+        # Encuentra la tabla de resultados en la página web
+        tabla = soup.find("table", {"class": "tabla"})
 
-    # Envía la respuesta de mensaje al chat
-    client.send_message(message.chat.id, response_message, parse_mode="html")
+        # Crea una respuesta de mensaje con la tabla de resultados
+        response_message = f"<b>Resultados:</b>n{tabla}"
+
+        # Envía la respuesta de mensaje al chat
+        client.send_message(message.chat.id, response_message, parse_mode="html")
 
 # Inicia el cliente de Pyrogram
 app.run()
-print("Bot iniciado")
