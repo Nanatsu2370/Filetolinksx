@@ -1,18 +1,11 @@
-from pyrogram import Client, filters
 import requests
 from bs4 import BeautifulSoup
+from telegram.ext import Updater, CommandHandler
 
-api_id = 9548711 # Reemplaza con tu api_id
-api_hash = "4225fbfa50c5ac44194081a0f114bdd1" # Reemplaza con tu api_hash
-bot_token = "5635481710:AAFCFnhjfDFW6G5sm9E5o48-9Bm1MBuXB8w" # Reemplaza con tu token de bot
-
-app = Client("my_bot", api_id, api_hash, bot_token=bot_token)
-
-# Define la función para procesar los mensajes
-@app.on_message(filters.private)
-def process_message(client, message):
+# Define la función para procesar el comando "/tabla"
+def tabla_command(update, context):
     # Obtener el texto del mensaje
-    text = message.text.lower()
+    text = update.message.text.lower()
 
     # Verificar si el mensaje comienza con el prefijo del comando "/tabla"
     if text.startswith("/tabla"):
@@ -26,11 +19,18 @@ def process_message(client, message):
         tabla = soup.find("table", {"class": "tabla"})
 
         # Crea una respuesta de mensaje con la tabla de posiciones
-       response_message = "Here's the table of positions:n" + table
-       client.send_message(message.chat.id, response_message, parse_mode="markdown")
+        response_message = f"<b>Tabla de posiciones:</b>n{tabla}"
+
+        # Envía la respuesta de mensaje al chat
+        context.bot.send_message(chat_id=update.effective_chat.id, text=response_message, parse_mode="HTML")
+
+# Define la función para procesar el comando "/resultados"
+def resultados_command(update, context):
+    # Obtener el texto del mensaje
+    text = update.message.text.lower()
 
     # Verificar si el mensaje comienza con el prefijo del comando "/resultados"
-    elif text.startswith("/resultados"):
+    if text.startswith("/resultados"):
         # Realiza una solicitud GET a la página web de la Serie Nacional de Béisbol de Cuba
         response = requests.get("http://www.beisbolencuba.com/series-nacionales/")
 
@@ -44,7 +44,17 @@ def process_message(client, message):
         response_message = f"<b>Resultados:</b>n{tabla}"
 
         # Envía la respuesta de mensaje al chat
-        client.send_message(message.chat.id, response_message, parse_mode="html")
+        context.bot.send_message(chat_id=update.effective_chat.id, text=response_message, parse_mode="HTML")
 
-# Inicia el cliente de Pyrogram
-app.run()
+# Crea una instancia del updater y pasa el token del bot
+updater = Updater(token="5635481710:AAEme7XW_45c69YpUV0RS9ip2p2QjTIl47o", use_context=True)
+
+# Obtén el dispatcher para registrar los manejadores de comandos
+dispatcher = updater.dispatcher
+
+# Registra los manejadores de comandos
+dispatcher.add_handler(CommandHandler("tabla", tabla_command))
+dispatcher.add_handler(CommandHandler("resultados", resultados_command))
+
+# Inicia el bot
+updater.start_polling()

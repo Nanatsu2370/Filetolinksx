@@ -1,4 +1,3 @@
-pyrogram
-bs4
 requests
-TgCrypto
+bs4
+python-telegram-bot
